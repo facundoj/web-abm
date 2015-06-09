@@ -1,8 +1,8 @@
 package usersManager
 
 import (
-	"log"
-	"errors"
+    "log"
+    "errors"
 )
 
 // User es una estructura que agrupa la informacion de los usuarios
@@ -59,8 +59,14 @@ func EditUser(dni int64, newName string, newSurname string)  {
 }
 
 // GetUsers devuelve el mapa de usuarios existentes en el momento
-func GetUsers() map[int64]User {
-    return users
+func GetUsers() []User {
+    usersList := make([]User, len(users))
+    i := 0
+    for _, user := range users {
+        usersList[i] = user
+        i = i + 1
+    }
+    return usersList
 }
 
 // GetUser devuelve el usuario con el DNI especificado
