@@ -8,7 +8,7 @@
         <h1>Users list</h1>
         <ul>
             {{range .}}
-                <li>{{.Surname}}, {{.Name}} ({{.Dni}}) - <a href="/delete/{{.Dni}}">Remove</a></li>
+                <li>{{.Surname}}, {{.Name}} ({{.Dni}}) - <a href="/delete/{{.Dni}}">Eliminar</a> <a href="/edit/{{.Dni}}">Modificar</a></li>
             {{end}}
         </ul>
         <a href="/create/">Add user</a>
