@@ -10,7 +10,7 @@ import (
 func main() {
     mux := http.NewServeMux()
 
-    Ctrl.InitUsers()
+    Ctrl.InitController()
 
     mux.HandleFunc("/", Ctrl.ListHandler)
     mux.HandleFunc("/create/", Ctrl.CreateHandler)

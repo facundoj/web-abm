@@ -5,22 +5,13 @@ import (
     "net/http"
     "strconv"
     "text/template"
+
+    UsersManager "github.com/facundoj/web-abm/usersManager"
 )
 
-// User es una estructura que agrupa la informacion de los usuarios
-type User struct {
-    Dni int64
-    Name string
-    Surname string
-}
-
-// coleccion de usuarios - closure
-var users map[int64]User
-
-// InitUsers crea la colleccion donde se alamacenaran los usuarios
-func InitUsers()  {
-	// usaremos el DNI como key
-    users = make(map[int64]User)
+// InitController prepara el controlador para funcionar
+func InitController()  {
+    UsersManager.Init()
 }
 
 // CreateHandler sirve para crear usuarios. POST para agregar el usuario y GET para obtener el formulario
@@ -40,17 +31,7 @@ func CreateHandler(res http.ResponseWriter, req *http.Request) {
         surname := req.FormValue("surname")
         dni, _ := strconv.Atoi(req.FormValue("dni"))
 
-        // recuperamos el usuario con ese DNI del mapa
-        _, ok := users[int64(dni)]
-
-        if !ok {
-            // lo agregamos solo si no fue encontrado
-            users[int64(dni)] = User{Name: name, Surname: surname, Dni: int64(dni)}
-            log.Println("User created", users[int64(dni)])
-        } else {
-            // el usuario con ese DNI ya existe, por lo que no se agrega
-            log.Println("User already exists", dni)
-        }
+        UsersManager.CreateUser(name, surname, int64(dni))
 
         // redirigimos a root para ver la lista
         http.Redirect(res, req, "/", http.StatusFound)
@@ -65,7 +46,7 @@ func ListHandler(res http.ResponseWriter, req *http.Request) {
         log.Print("Error loading template")
         return
     }
-    t.Execute(res, users)
+    t.Execute(res, UsersManager.GetUsers())
 }
 
 // DeleteHandler sirve para eliminar un usuario
@@ -74,8 +55,7 @@ func DeleteHandler(res http.ResponseWriter, req *http.Request)  {
     userDniStr := req.URL.Path[len("/delete/"):]
     userDni, _ := strconv.Atoi(userDniStr)
 
-    // eliminamos el usuario del mapa
-    delete(users, int64(userDni))
+    UsersManager.DeleteUser(int64(userDni))
 
     // redirigimos a root para ver la lista
     http.Redirect(res, req, "/", http.StatusFound)
@@ -88,12 +68,11 @@ func EditHandler(res http.ResponseWriter, req *http.Request)  {
         userDniStr := req.URL.Path[len("/edit/"):]
         userDni, _ := strconv.Atoi(userDniStr)
 
-        // recuperamos el usuario del mapa de usuarios
-        user, ok := users[int64(userDni)]
+        // obtenemos el usuario
+        user, err := UsersManager.GetUser(int64(userDni))
 
-        if !ok {
-            // si el usuario no fue encontrado, volvemos a la lista
-            log.Print("User not exists")
+        if err != nil {
+            // si no se encontro, redirijo a la lista de usuarios
             http.Redirect(res, req, "/", http.StatusFound)
         }
 
@@ -112,18 +91,7 @@ func EditHandler(res http.ResponseWriter, req *http.Request)  {
 
         dni, _ := strconv.Atoi(dniStr)
 
-        user, ok := users[int64(dni)]
-
-        // si encontre el usuario, lo modifico
-        if ok {
-            user.Name = newName
-            user.Surname = newSurname
-
-            // no se modifica el elemento del mapa, sino una copia
-            // luego, se pisa el valor
-            // Info sobre el issue: https://code.google.com/p/go/issues/detail?id=3117
-            users[int64(dni)] = user
-        }
+        UsersManager.EditUser(int64(dni), newName, newSurname)
 
         // redirijo a la lista de usuarios
         http.Redirect(res, req, "/", http.StatusFound)
