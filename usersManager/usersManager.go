@@ -54,6 +54,7 @@ func EditUser(dni int64, newName string, newSurname string)  {
         // no se modifica el elemento del mapa, sino una copia
         // luego, se pisa el valor
         // Info sobre el issue: https://code.google.com/p/go/issues/detail?id=3117
+        // http://play.golang.org/p/qRl3wG5yVU
         users[int64(dni)] = user
     }
 }
